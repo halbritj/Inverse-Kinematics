@@ -21,8 +21,6 @@ class IK:
         pass
 
 
-
-
     def setGoal(self, goal):
         self.min_e = np.inf
         self.goal = goal
@@ -111,3 +109,20 @@ class IK:
                     free[i] = False
                     
                 self.theta[i] = temp
+
+
+
+
+
+
+import time
+
+start = time.time()
+for i in range(100000):
+    #eval('5 + 10')
+    5 + 10
+end = time.time()
+print('%.3fs' %(end-start))
+
+
+

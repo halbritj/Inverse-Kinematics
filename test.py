@@ -1,8 +1,11 @@
+import server
+import threading
+import asyncore
 
+a = 5
 
-class cat:
-    def __init__(self, name):
-        self.name = name
+client = server.Server('localhost', 5050)
 
-    def getName(self):
-        return self.name
+comm = threading.Thread(target=asyncore.loop)
+comm.daemon = True
+comm.start()

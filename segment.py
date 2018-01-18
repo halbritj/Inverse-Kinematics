@@ -55,9 +55,6 @@ class frame:
         glDrawArrays(GL_LINES, 0, 6)
 
 
-
-
-
 def bindTexture(img):
     h, w, _ = img.shape
     
@@ -112,7 +109,6 @@ class segment:
         
         glBindVertexArray(self.vao)
         glDrawArrays(GL_TRIANGLES, 0, self.v.size//3)
-
 
 
 class robot:
@@ -184,10 +180,18 @@ class robot:
 
         glLoadMatrixf(modelview)
 
-        self.step(T[-1]) #move the robot to its next position
+        #self.step(T[-1]) #move the robot to its next position
+
+    def communication(self, data):
+        print(data)
+        if data[0] == 0: #use eval()
+            return eval(data[1:].decode('utf-8'))
+        elif data[1] == 1: #asdfa
+            pass
 
         
-
+        print(data)
+        return b'empty reply'
             
 
 

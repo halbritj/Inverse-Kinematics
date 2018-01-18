@@ -1,4 +1,10 @@
+import numpy as np
 import socket
+
+goal = np.array([
+    [  0.,   0.,   -1.,  -60.],
+    [  0.,   1.,   0.,   0.],
+    [  1.,   0.,   0.,  30.]], dtype=np.float32)
 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
