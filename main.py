@@ -94,7 +94,7 @@ def map_sphere(p):
     else: P[-1] = np.sqrt(r**2 - L**2)
 
     return P
-    
+
 class view_port:
     def __init__(self):
         self.zoom = np.array([ 0.1,  0.1,  0.1], dtype=np.float32)

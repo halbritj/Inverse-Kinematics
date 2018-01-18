@@ -3,10 +3,13 @@ import asynchat
 import socket
 import threading
 
+'''http://www.grantjenks.com/wiki/random/python_asynchat_chat_example'''
+
 class ChatHandler(asynchat.async_chat):
     def __init__(self, sock):
         asynchat.async_chat.__init__(self, sock=sock)
- 
+
+        self.sock = sock        
         self.set_terminator(b'\n')
         self.buffer = []
  
@@ -15,6 +18,7 @@ class ChatHandler(asynchat.async_chat):
  
     def found_terminator(self):
         print('Received:', self.buffer)
+        self.sock.send(b'got your message')
         self.buffer = []
 
 class Server(asyncore.dispatcher):
