@@ -9,6 +9,7 @@ import DH_METHODS as DHM
 from read_obj import OBJ
 
 import time
+from array_bytes import *
 
 dtypes = {
     np.dtype('float32'):    GL_FLOAT,
@@ -124,12 +125,6 @@ class robot:
         #self.DH = [self.baseFrame] + self.DH
         self.segments = []
 
-        self.min_theta = np.array(
-            np.deg2rad([-185., -65., -220., -350., -130., -350.]), dtype=np.float32)
-
-        self.max_theta = np.array(
-            np.deg2rad([ 185., 125.,   64.,  350.,  130.,  350.]), dtype=np.float32)
-
         for i in range(self.size + 1):
             print(name %(i))
             seg = segment(name %(i))
@@ -149,9 +144,9 @@ class robot:
         glBindAttribLocation(self.Shader, VECTOR_ATTRIB, 'position')
         glBindAttribLocation(self.Shader, TEXTURE_ATTRIB, 'texture')
         glBindAttribLocation(self.Shader, NORMAL_ATTRIB, 'normal')
-
         #loc = glGetUniformLocation(self.Shader, 'myTextureSampler')
 
+    '''
     def move(self, dTheta):
         self.theta += dTheta
 
@@ -162,8 +157,8 @@ class robot:
         self.theta[ldx] = self.min_theta[ldx]
 
         return ldx, gdx
-        
-        
+    '''
+    
     def draw(self):
 
         T = self.getArm()
@@ -184,14 +179,15 @@ class robot:
 
     def communication(self, data):
         print(data)
-        if data[0] == 0: #use eval()
-            return eval(data[1:].decode('utf-8'))
-        elif data[1] == 1: #asdfa
-            pass
-
-        
-        print(data)
-        return b'empty reply'
+        if data[0] == 48: #get variable
+            command = data[1:].decode('utf-8')
+            array = eval(command)
+            return array2bytes(array)
+        elif data[0] == 49: #set variable
+            print('here')
+            self.theta = bytes2array(data[1:])
+            print(self.theta)
+            return b'\n'
             
 
 
