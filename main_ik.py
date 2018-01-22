@@ -36,13 +36,15 @@ class IK:
 
     def loop(self, goal):
         self.theta = np.zeros([6], np.float32)
-        self.setTheta()
+        #self.setTheta()
         self.goal = goal
         self.min_e = np.inf
         while self.min_e > 1:
             self.step()
 
     def step(self):
+        '''https://link.springer.com/content/pdf/10.1007/s00371-004-0244-4.pdf'''
+        
         self.theta = self.getTheta()
 
         T = self.getArm()
@@ -130,11 +132,17 @@ class IK:
 
 
 
-
+'''
 goal = np.array([
     [  0.,   0.,   -1.,  -60.],
     [  0.,   1.,   0.,   0.],
     [  1.,   0.,   0.,  30.]], dtype=np.float32)
+'''
+
+goal = np.array([
+    [  0.,   0.,   1.,  30.],
+    [  1.,   0.,   0.,   0.],
+    [  0.,   1.,   0.,  10.]], dtype=np.float32)
 
 ik = IK()
 ik.loop(goal)
