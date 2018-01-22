@@ -16,6 +16,8 @@ class IK:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect(('localhost', 5050))
 
+        self.terminator = b'\r\n\r\n'
+
 
     def f(self): return self.communication('self.f(*self.theta)')
 
@@ -24,15 +26,17 @@ class IK:
     def getTheta(self): return self.communication('self.theta')
 
     def communication(self, data):
-        self.sock.sendall(b'0' + data.encode('utf-8') + b'\n')
+        self.sock.sendall(b'0' + data.encode('utf-8') + self.terminator)
         reply = self.sock.recv(4096)
         return bytes2array(reply)
 
-    def setTheta(self, array):
-        self.sock.sendall(b'1' + array2bytes(self.theta) + b'\n')
+    def setTheta(self):
+        self.sock.sendall(b'1' + array2bytes(self.theta) + self.terminator)
         self.sock.recv(4096)
 
     def loop(self, goal):
+        self.theta = np.zeros([6], np.float32)
+        self.setTheta()
         self.goal = goal
         self.min_e = np.inf
         while self.min_e > 1:
@@ -122,7 +126,7 @@ class IK:
                     
                 self.theta[i] = temp
 
-                self.setTheta(self.theta)
+                self.setTheta()
 
 
 

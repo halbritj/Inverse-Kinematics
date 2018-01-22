@@ -178,15 +178,13 @@ class robot:
         #self.step(T[-1]) #move the robot to its next position
 
     def communication(self, data):
-        print(data)
+        #print(data)
         if data[0] == 48: #get variable
             command = data[1:].decode('utf-8')
             array = eval(command)
             return array2bytes(array)
         elif data[0] == 49: #set variable
-            print('here')
             self.theta = bytes2array(data[1:])
-            print(self.theta)
             return b'\n'
             
 

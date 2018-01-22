@@ -188,12 +188,13 @@ def loop(screen):
 if __name__ == "__main__":
 
     screen = init()
+    
     '''
-
     comm = threading.Thread(target=asyncore.loop)
     comm.daemon = True
     comm.start()
     '''
+    
     r = loop(screen)
 
     

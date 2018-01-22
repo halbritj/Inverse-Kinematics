@@ -10,7 +10,7 @@ class ChatHandler(asynchat.async_chat):
         asynchat.async_chat.__init__(self, sock=sock)
 
         self.sock = sock        
-        self.set_terminator(b'\n')
+        self.set_terminator(b'\r\n\r\n')
         self.buffer = []
  
     def collect_incoming_data(self, data):
