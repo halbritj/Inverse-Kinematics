@@ -82,8 +82,6 @@ SCROLL_UP = 5
 
 keys = {LMB: False, MMB: False, RMB: False}
 
-
-
 def map_sphere(p):
     r = 30
     L = np.linalg.norm( np.array(p) - 250)
