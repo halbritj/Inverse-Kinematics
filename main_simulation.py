@@ -83,23 +83,31 @@ SCROLL_UP = 5
 keys = {LMB: False, MMB: False, RMB: False}
 
 def map_sphere(p):
-    r = 30
-    L = np.linalg.norm( np.array(p) - 250)
-    P = np.array([p[0] - 250, p[1] - 250, 0], dtype=np.float32)
+    w, h = pygame.display.get_surface().get_size()
+    P = 2*(p/[w,h]) - 1
 
-    if L > 0.707106 * r: P[-1] = (r**2)/(2*L)
-    else: P[-1] = np.sqrt(r**2 - L**2)
+    r = 1/np.sqrt(2)
 
-    return P
+    R = np.array([-P[0], P[1], 0], np.float32)
+
+    L = np.linalg.norm(P)
+
+    if L <= r: R[2] = np.sqrt(r**2 - L**2)
+    else: R[2] = r**2 / (2*L)
+
+    return R
+    
 
 class view_port:
     def __init__(self):
-        self.zoom = np.array([ 0.1,  0.1,  0.1], dtype=np.float32)
-        self.trans = np.array([0, 8, -1.5], dtype=np.float32)
-        self.rot = np.array([0, 0], dtype=np.float32)
+        self.zoom = np.array([ 0.1,  0.1,  0.1], np.float32)
+        self.trans = np.array([0,0,-10], np.float32)
+        self.rot = np.array([0, 0], np.float32)
 
-        self.u = np.array([1,0,0], dtype=np.float32)
+        self.u = np.array([1,0,0], np.float32)
         self.theta = 0
+
+        self.start_rot = np.ndarray((4,4), np.float32)
 
     def event_handler(self, e):
         '''
@@ -110,44 +118,72 @@ class view_port:
             pygame.quit()
             exit()
         elif e.type == KEYDOWN:
-            None
+            pass
+        elif e.type == KEYUP:
+            pass
         elif e.type == MOUSEBUTTONDOWN:
-            if e.button == SCROLL_UP: self.zoom += .1*self.zoom
+            if e.button == RMB: self.trans_start()
+            elif e.button == MMB: self.rot_start()
+            elif e.button == SCROLL_UP:  self.zoom += .1*self.zoom
             elif e.button == SCROLL_DOWN: self.zoom -= .1*self.zoom
-            elif e.button == LMB:
-                self.P_a = map_sphere(e.pos)
-                print(self.P_a)
-                keys[LMB] = True
+
         elif e.type == MOUSEBUTTONUP:
-            if e.button == LMB:
-                keys[LMB] = False
-                #self.rot = np.copy(self.initial_rot)
+            if e.button == RMB: self.trans_set()
+            elif e.button == MMB: self.rot_set()
+
         elif e.type == MOUSEMOTION:
-            pos = np.array(e.pos, dtype=np.float32)
-            if keys[LMB]:
-                self.P_c = map_sphere(e.pos)
+            self.pos = np.array(e.pos, np.float32)
+            if e.buttons == (0,0,1): self.trans_move()#RMB motion
+            elif e.buttons == (0,1,0): self.rot_move() #MMB motion
 
-                self.u = np.cross(self.P_a, self.P_c)
-                L = np.linalg.norm(self.u)
-                self.theta = np.arctan2( np.linalg.norm(self.u), np.dot(self.P_a, self.P_c) )
+    def trans_start(self):
+        self.start_pos = np.copy(self.pos)
+        self.start_trans = np.copy(self.trans)
+        
+    def trans_move(self):
+        dx, dy = self.pos - self.start_pos
+        self.trans = self.start_trans + np.array([dx,-dy,0], np.float32)/40
+        
+    
+    def trans_set(self): pass
 
+    def rot_start(self):
+        self.P_a = map_sphere(self.pos)
+        glGetFloatv(GL_MODELVIEW_MATRIX, self.start_rot)
+        
+    def rot_move(self):
+        self.P_c = map_sphere(self.pos)
+        
+        self.u = np.cross(self.P_a, self.P_c)
+        self.theta = np.arctan2( np.linalg.norm(self.u), np.dot(self.P_a, self.P_c) )
 
-                self.theta = np.rad2deg(self.theta)
-                self.u /= L
+        self.theta = np.rad2deg(self.theta)
+        self.u /= -np.linalg.norm(self.u)
 
-                print(self.u, self.theta)
-                
+        glMatrixMode(GL_MODELVIEW)
+        glLoadMatrixf(self.start_rot)
+        glRotatef(self.theta, *self.u)
+        
+        
+    def rot_set(self):
+        #glMatrixMode(GL_MODELVIEW)
+        #glRotatef(self.theta, *self.u)
+        pass
+
+    
     def set_view(self):
+
+        #glMatrixMode(GL_MODELVIEW)
+        #glLoadIdentity()
+
+        
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(45, 1, 0.1, 100)
-
-        glRotatef(-90, 1, 0, 0)
-
-        glRotatef(self.theta, *self.u)
         
         glTranslatef(*self.trans)
         glScalef(*self.zoom)
+        
 
 def loop(screen):
     clock = pygame.time.Clock()
@@ -162,38 +198,29 @@ def loop(screen):
 
     S = Server('localhost', 5050, R)
 
+    t = segment.Text('')
 
     glUseProgram(R.Shader)
     while True:
+        
         for e in pygame.event.get(): view.event_handler(e)
         view.set_view()
-        
-        clock.tick(60)
-        #print(clock.get_fps())
+
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+        clock.tick(60)
+
+        R.draw()
         
         glBindVertexArray(vao)
         glDrawArrays(GL_LINES, 0, 55)
-        
-        R.draw()
 
+        t.genText('FPS: %d' %(clock.get_fps()))
+        t.draw()
+        
         pygame.display.flip()
 
 
 if __name__ == "__main__":
-
-    screen = init()
-    
-    '''
-    comm = threading.Thread(target=asyncore.loop)
-    comm.daemon = True
-    comm.start()
-    '''
-    
+    screen = init()    
     r = loop(screen)
-
-    
-
