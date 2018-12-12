@@ -19,7 +19,7 @@ def generate_DH(i, V, n):
         [S(V[0]),   C(V[0])*C(V[1]) ,   -C(V[0])*S(V[1]),   V[2]*S(V[0])],
         [0      ,   S(V[1])         ,   C(V[1])         ,   V[3]        ],
         [0      ,   0               ,   0               ,   1           ]])
-       
+    
     return T.evalf(), x
 
 def getJacobian(funcs, vars_):
@@ -39,7 +39,7 @@ def createParams(table):
 
     F = np.identity(4, dtype=np.float32)
     for i in range(n):
-        T, x = generate_DH(i, table[i], 0)
+        T, x = generate_DH(i, table[i].tolist(), 0)
         X.append(x)
         DH.append( sp.lambdify(x, T) )
         F *= T
@@ -48,3 +48,13 @@ def createParams(table):
     
     return DH, J
 
+def allDH(table):
+    n = len(table)
+
+    DH = []
+    
+    for i in range(n):
+        T, x = generate_DH(i, table[i].tolist(), 0)
+        DH.append( sp.lambdify(x, T) )
+
+    return DH
